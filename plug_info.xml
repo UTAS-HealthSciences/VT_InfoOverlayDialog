@@ -1,0 +1,37 @@
+<plugin id="InfoOverlay"
+        category="tr:Help"
+        name="tr:Information Overlay"
+        version="1.0"
+        isGraphical="true"
+        multipleInstance="false"
+        description="tr:Shows an information overlay on screen."
+        author="Connor Deckers (cdeckers) 2017">
+
+        <parameters>
+          <group id="g_overlay" name="tr: Overlay settings">
+            <number id="marginX" name="tr: Horizontal offset: " minimum="0" maximum="9999" default="5" suffix="pixels" />
+            <number id="marginY" name="Vertical offset: " minimum="0" maximum="9999" default="5" suffix="pixels" />
+            <color id="icon_color" name="tr: Icon colour:" default="#555555" needAlpha="false" defaultAlpha="1" source="customColor" />
+            <color id="box_color" name="tr: Background colour:" default="#FFFFFF" needAlpha="true" defaultAlpha="0.85" source="customColor" />
+          </group>
+          <group id="g_items" name="tr: Information items">
+            <elementlist id="info_boxes">
+              <group id="g_item" name="Information Item">
+                <string id="panoID" name="tr: Pano ID" default="pano" />
+                <string id="snippet" name="tr: Snippet location" default="./snippets/" />
+                <bool id="openOnStart" name="tr: Open on first scene view" default="true" />
+              </group>
+            </elementlist>
+          </group>
+        </parameters>
+
+        <templates>
+            <template url="infobox.tmpl" />
+            <template url="infobox_bs.tmpl"  type="jsbootstrap" />
+            <template url="infobox_bsle.tmpl" type="jsbootstraploaded" />
+            <template url="jsevents.tmpl" />
+        </templates>
+
+        <resources>
+        </resources>
+</plugin>

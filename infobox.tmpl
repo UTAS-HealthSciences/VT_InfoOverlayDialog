@@ -1,0 +1,21 @@
+<ptplugin name="{{p.id}}" engine="infoOverlay">
+	<settings>
+		<option name="offsetX" value="{{p.marginX.value}}" type="int" />
+		<option name="offsetY" value="{{p.marginY.value}}" type="int" />
+
+		<option name="icon_color" value="{{p.icon_color.colorRRGGBB}}" type="string" />
+		<option name="icon_alpha" value="{{p.icon_color.alpha}}" type="float" />
+
+		<option name="bgcolor" value="{{p.box_color.colorRRGGBB}}" type="string" />
+		<option name="bgalpha" value="{{p.box_color.alpha}}" type="float" />
+
+		{% for item in p.info_boxes.elements %}
+		<option name="info{{forloop.counter}}_pano" value="{{item.panoID.value}}" type="string" />
+		<option name="info{{forloop.counter}}_snippet" value="{{item.snippet.value}}" type="string" />
+		<option name="info{{forloop.counter}}_openOnStart" value="{{item.openOnStart.value}}" type="bool" />
+
+		{% endfor %}
+		<option name="infoBoxCount" value="{{p.info_boxes.nbelements}}" type="int" />
+
+	</settings>
+</ptplugin>

@@ -1,0 +1,48 @@
+window.plugin = window.plugin || {};
+
+//Property getting helper function.
+function getProp(property, type, pluginID)
+{
+  if(typeof pluginID !== "string") { pluginID = '{{p.id}}'; }
+  if(typeof property !== "string") { console.error("Error in prop: property should be of type string. Type is " + typeof property); }
+  if(typeof type !== "string") { console.error("Error in prop: type should be of type string. Type is " + typeof type); }
+
+  var preStr = "ptplugin["+pluginID+"].settings[0].option[";  /* Concat with necessary var */  var endStr = '].value';
+  var val = getKrValue(preStr+property+endStr, type);
+  return val;
+}
+
+var p='{{p.id}}';
+var bc = ktools.Color.hex2rgb(getProp("bgcolor", "string", p)); //Get the RGB value of the background colour
+bc.push(getProp("bgalpha", "float", p).toFixed(4)); //Get the alpha float.
+
+var ic = ktools.Color.hex2rgb(getProp("icon_color", "string", p)); //Get the RGB value of the background colour
+ic.push(getProp("icon_alpha", "float", p).toFixed(4)); //Get the alpha float.
+
+var props = {
+  parent: '#panoDIV',
+  id: p,
+  offset: {
+    x: getProp('offsetX', 'string', p),
+    y: getProp('offsetY', 'string', p),
+  },
+  icon: {
+    color: ic,
+  },
+  box: {
+    color: bc,
+  },
+  info: [],
+};
+var len = getProp('infoBoxCount', 'int', p);
+//Gets each info element from the parameter store (e.g. Pano ID and snippet location)
+for(var i=1;i<=len;i++)
+{
+  props.info.push({
+    pano: getProp(`info${i}_pano`, 'string', p),
+    snippet: getProp(`info${i}_snippet`, 'string', p),
+    openOnStart: getProp(`info${i}_openOnStart`, 'bool', p),
+  });
+}
+
+window.plugin.helpbox = new InfoBox(props);

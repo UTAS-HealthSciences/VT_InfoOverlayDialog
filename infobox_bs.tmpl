@@ -1,0 +1,270 @@
+function InfoBox(props)
+{
+  //Test if there's a style tag in the header, otherwise append one.
+  if($('head > style').length == 0) { $('head').append('<style></style>'); }
+  $('head > style').get(0).append(`
+    @import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
+    /* Class of all info overlay containers */
+    .infospot {
+      position: absolute;
+      top:${props.offset.y}px;
+      right: ${props.offset.x}px;
+    }
+
+    /* The container that frames the body (arrow and content). */
+    .body {
+      clear:both;
+    }
+
+    /* The container that is animated for hiding and showing content. */
+    .animbody {
+      overflow:hidden;
+    }
+
+    /* The (x) / (i) icon */
+    .icon {
+      width: 32px;
+      height: 32px;
+      text-align: center;
+      line-height: 16px;
+      border-radius: 16px;
+      overflow: hidden;
+      background-color: rgba(${props.icon.color.join(',')});
+      color: white;
+      font-family: 'Open Sans', sans-serif;
+      cursor: pointer;
+      float: right;
+      clear:both;
+    }
+
+    /* Sets the content of the icon, depending on its state */
+    .icon[state='closed']:after {
+        content: 'i';
+        line-height: 32px;
+        font-size: 25px;
+    }
+
+    /* Sets the content of the icon, depending on its state */
+    .icon[state='opened']:after {
+        content: 'x';
+        line-height: 29px;
+        font-size: 25px;
+    }
+
+    /* The arrow between the content box and the (i) / (x) icon. */
+    .arrow {
+      width:0;
+      height:0;
+      border-style:solid;
+      border-width:0 0 30px 30px;
+      border-color: transparent transparent rgba(${props.box.color.join(',')}) transparent;
+      float:right;
+      margin:0;
+      margin-right:15px;
+      margin-top:5px;
+      clear:both;
+    }
+
+    /* The text and image container */
+    .content {
+      width:500px;
+      min-height:10px;
+      float:right;
+      margin:0;
+      margin-right:15px;
+      background-color:rgba(${props.box.color.join(',')});
+      clear:both;
+      font-family: 'Open Sans', sans-serif;
+      padding:20px;
+      line-height:1.35em;
+    }
+
+
+    /* The heading tags styling */
+    .text > .heading {
+      font-size:26px;
+      line-height:1.1em;
+    }
+
+    /* Paragraph elements inside the text element */
+    .text p {
+      padding-top:15px;
+      line-height:1.6em;
+      font-size:14px;
+    }
+
+    /* Position the image in the content */
+    .content > .img {
+      float:left;
+      width:150px;
+      /*height:150px;*/
+      overflow:hidden;
+      margin: 15px;
+      margin-left:0;
+    }
+
+    /* If added to the image box, it will round the image into a circle */
+    .img-round {
+      width:125px;
+      height:125px;
+      border-radius:125px;
+      text-align:center;
+      overflow:hidden;
+      margin: auto;
+    }
+
+    /* Sets the size and position of the internal image object */
+    .img-round > img {
+      height:auto;
+      width:125px;
+    }
+
+    /* The name/title/description under the image */
+    .title {
+      margin: 0;
+      text-align: center;
+      margin-top: 8px;
+      font-size:12px;
+      font-weight:bold;
+      text-transform:uppercase;
+    }
+
+    .title:empty {
+      display:none;
+    }
+
+    /* Tests if the screen is no wider than 768px.
+       This lines up with Bootstrap.
+       If it is, then use the following code */
+    @media (max-width:768px)
+    {
+      /* Sets the .content parent containers to be 100% height, so that we can control how large the content box is */
+      .infospot,
+      .body,
+      .animbody {
+        height:100%;
+      }
+
+      /* Sets the size of the content box when on mobile. */
+      .content {
+        width: 80%;
+        height:55%;
+        overflow-y:scroll;
+      }
+
+      /* Rather than floating the text around the image, position the text below the image, and float the image and title in the center of the container */
+      .content > .img {
+        float:none;
+        margin: 5px auto 25px auto;
+      }
+    }
+
+    /* Bootstrap CSS introduces some small bugs with the included CSS. The following code is used to remedy these and return them to normal. */
+
+    p {
+      margin:0;
+    }
+
+    `);
+
+  //Loop through each info element, and utilize it.
+  for(var i=0; i<props.info.length; i++)
+  {
+    //Get the current item and assign it.
+    var item = props.info[i];
+
+    //Shorthand vars
+    var pano = item.pano;
+    var openWithScene = item.openOnStart;
+
+    //Test whether the dialog should open on the first loading.
+    var openState = openWithScene ? 'opened' : 'closed';
+
+    //Build the body of each dialog.
+    var body = `<div id="${pano}-info" data-id="${pano}" seen="false" showOnce="${openWithScene}" class="infospot" style="display:none;">
+      <div class="icon" state="${openState}"></div>
+      <div class="body">
+        <div class="animbody" style="display:none;">
+          <div class="arrow"></div>
+          <div class="content">
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+    //Attach the dialog to the parent.
+    $(props.parent).append(body);
+
+    //Get the dialog that was attached to the parent element, so that we can modify it.
+    var $obj = $('#'+pano+'-info');
+
+    //Call the fillData() function to fill our content.
+    //NOTE: This has to be run inside a function, as the `success` callback in the .ajax handler needs the CURRENT reference.
+    //NOTE: If the .ajax call is implemented directly, it will not be able ot attach the received content to the DOM.
+    //NOTE: Functions, however, will maintain their content and context for their life cycle, which will then allow the callback to hold the correct information.
+    fillData($obj, item);
+    function fillData($obj, item) { $.ajax(item.snippet, {
+        success: function(data) { //When the ajax has returned the data..
+          $($obj).find(".content").html(data); //Find the appropriate .content object in our DOM.
+          if(item.openOnStart) { $($obj).find(".animbody").slideDown(); } //If the item is set to open on start, then slide it open once the content has loaded.
+        },
+      });
+    }
+  }
+
+  //Event handlers
+  //When an (i)/(x) icon is clicked, run this event.
+  $(".icon").on('click', function() {
+    //Get the current state of the button
+    switch($(this).attr('state'))
+    {
+      //If the button is currently opened.
+      case 'opened':
+        $(this).attr('state', 'closed'); //Change the attribute
+        $(this).parent('.infospot').find(".animbody").slideUp(); //Close the box
+        break;
+      //If the button is currently closed.
+      case 'closed':
+        $(this).attr('state', 'opened'); //Change the attribute
+        $(this).parent('.infospot').find(".animbody").slideDown(); //Open the box
+        $(this).parent('.infospot').attr('seen', true); //Set the box to seen.
+        break;
+    }
+  });
+
+  //On each new scene loading..
+  $(document).on('pano_onnewpano', function() {
+    //Go through all info dialog overlays.
+    $('.infospot').each(function() {
+      //If this overlay has an ID that matches the current scene
+      if($(this).data('id') == krpano.get('xml.scene'))
+      {
+        //Display this element
+        $(this).css({display: 'block'});
+
+        //If this item should be shown once automatically.
+        if($(this).attr('showOnce') == 'true')
+        {
+          //Has the item been seen yet? If yes, the start closed this scene, otherwise open it up.
+          $(this).find('.icon').attr('state', $(this).attr('seen') == 'true' ? 'closed' : 'opened');
+
+          //Set the seen marker to true.
+          $(this).attr('seen', true);
+        }
+      }
+      else //The ID in the info dialog overlay isn't the same as this scene
+      {
+        //Hide the dialog.
+        $(this).css({display: 'none'});
+      }
+
+      //Make sure that items close properly if their state is closed, even if this was done without clicking the button.
+      //hidden = (is the icons state set to 'closed'?).
+      var hidden = $(this).find('.icon').attr('state') == 'closed';
+
+      //Hide or show the animation body based upon the above variable.
+      $(this).find('.animbody').css({display: hidden ? 'none' : 'block'});
+    });
+  });
+}
